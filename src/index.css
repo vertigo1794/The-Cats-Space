@@ -1,0 +1,107 @@
+@import "tailwindcss";
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  }
+}
+
+.font-display {
+  font-family: 'Syne', sans-serif;
+}
+
+/* Custom smooth transitions for day/night mode */
+.theme-transition {
+  transition: background-color 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+              color 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Shimmer and pulse animations */
+@keyframes floatGentle {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes twinkleStar {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}
+
+@keyframes waterGlint {
+  0%, 100% {
+    opacity: 0.2;
+    transform: scale(0.7) translateY(0);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.2) translateY(-2px);
+  }
+}
+
+@keyframes softPurr {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.015);
+  }
+}
+
+.animate-float {
+  animation: floatGentle 3s ease-in-out infinite;
+}
+
+.animate-twinkle {
+  animation: twinkleStar 2.5s ease-in-out infinite;
+}
+
+.animate-glint {
+  animation: waterGlint 2s ease-in-out infinite;
+}
+
+.animate-purr {
+  animation: softPurr 1.2s ease-in-out infinite;
+}
+
+@keyframes catBlink {
+  0%, 88%, 100% {
+    transform: scaleY(1);
+  }
+  92% {
+    transform: scaleY(0.05);
+  }
+}
+
+.group:hover .cat-eye {
+  animation: catBlink 2.6s ease-in-out infinite;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.6);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.4);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.7);
+}
