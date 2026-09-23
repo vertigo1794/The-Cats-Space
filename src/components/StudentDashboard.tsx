@@ -34,6 +34,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | JobsheetStatus>('all');
   const [busyIds, setBusyIds] = useState<Set<number>>(new Set());
+  const [errorIds, setErrorIds] = useState<Record<number, string>>({});
   const fileInputRefs = useRef<Record<number, HTMLInputElement | null>>({});
   const liveInputRefs = useRef<Record<number, HTMLInputElement | null>>({});
 
@@ -44,6 +45,31 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
       else next.delete(id);
       return next;
     });
+  };
+
+  const withTimeout = <T,>(promise: Promise<T>, ms = 20000) =>
+    Promise.race([
+      promise,
+      new Promise<T>((_, reject) =>
+        setTimeout(() => reject(new Error('Timed out — check Firebase Storage/Firestore rules')), ms)
+      ),
+    ]);
+
+  const runAction = async (id: number, action: () => Promise<void>) => {
+    setBusy(id, true);
+    setErrorIds((prev) => {
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
+    try {
+      await withTimeout(action());
+    } catch (err) {
+      console.error('Jobsheet action failed:', err);
+      setErrorIds((prev) => ({ ...prev, [id]: err instanceof Error ? err.message : 'Failed' }));
+    } finally {
+      setBusy(id, false);
+    }
   };
 
   const checkedCount = jobsheets.filter((j) => j.status === 'checked').length;
@@ -57,42 +83,22 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
     });
   }, [jobsheets, search, statusFilter]);
 
-  const handleFileChange = async (id: number, file: File | null) => {
+  const handleFileChange = (id: number, file: File | null) => {
     if (!file) return;
-    setBusy(id, true);
-    try {
-      await uploadPdf(student, id, file);
-    } finally {
-      setBusy(id, false);
-    }
+    runAction(id, () => uploadPdf(student, id, file));
   };
 
-  const handleLiveFileChange = async (id: number, file: File | null) => {
+  const handleLiveFileChange = (id: number, file: File | null) => {
     if (!file) return;
-    setBusy(id, true);
-    try {
-      await uploadLive(student, id, file);
-    } finally {
-      setBusy(id, false);
-    }
+    runAction(id, () => uploadLive(student, id, file));
   };
 
-  const handleDeletePdf = async (id: number) => {
-    setBusy(id, true);
-    try {
-      await deletePdf(student, id);
-    } finally {
-      setBusy(id, false);
-    }
+  const handleDeletePdf = (id: number) => {
+    runAction(id, () => deletePdf(student, id));
   };
 
-  const handleDeleteLive = async (id: number) => {
-    setBusy(id, true);
-    try {
-      await deleteLive(student, id);
-    } finally {
-      setBusy(id, false);
-    }
+  const handleDeleteLive = (id: number) => {
+    runAction(id, () => deleteLive(student, id));
   };
 
   return (
@@ -204,6 +210,9 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                       <Loader2 className="w-3 h-3 animate-spin" />
                       Uploading…
                     </p>
+                  )}
+                  {errorIds[j.id] && (
+                    <p className="mt-1 text-[11px] text-red-400">{errorIds[j.id]}</p>
                   )}
 
                   <div className="mt-4 flex flex-wrap items-center gap-2">
