@@ -1,6 +1,7 @@
 import React from 'react';
 import { Sparkles, FileText, Eye, Radio, PawPrint, CheckCircle2 } from 'lucide-react';
 import { Student, JobsheetItem } from '../types';
+import { markChecked } from '../services/jobsheetService';
 
 const STUDENT_NAMES: Record<Student, string> = {
   sasha: 'Sasha',
@@ -9,19 +10,9 @@ const STUDENT_NAMES: Record<Student, string> = {
 
 interface LibraryPageProps {
   jobsheetsByStudent: Record<Student, JobsheetItem[]>;
-  onUpdateStudentJobsheets: (student: Student, jobsheets: JobsheetItem[]) => void;
 }
 
-export const LibraryPage: React.FC<LibraryPageProps> = ({
-  jobsheetsByStudent,
-  onUpdateStudentJobsheets,
-}) => {
-  const markChecked = (student: Student, id: number) => {
-    const updated = jobsheetsByStudent[student].map((j) =>
-      j.id === id ? { ...j, status: 'checked' as const } : j
-    );
-    onUpdateStudentJobsheets(student, updated);
-  };
+export const LibraryPage: React.FC<LibraryPageProps> = ({ jobsheetsByStudent }) => {
   return (
     <section className="relative w-full min-h-[70vh] py-16 px-4 sm:px-6 lg:px-8 bg-slate-950 overflow-hidden">
       <div
@@ -104,7 +95,7 @@ export const LibraryPage: React.FC<LibraryPageProps> = ({
                             Live
                           </a>
                           <button
-                            onClick={() => markChecked(student, j.id)}
+                            onClick={() => void markChecked(student, j.id)}
                             disabled={j.status === 'checked'}
                             className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-semibold rounded-full transition-colors ${
                               j.status === 'checked'

@@ -1,6 +1,7 @@
 import React, { useMemo, useRef, useState } from 'react';
-import { ArrowLeft, GraduationCap, Search, BookOpen, Upload, Eye, Radio, PawPrint, X } from 'lucide-react';
-import { JobsheetStatus, JobsheetItem } from '../types';
+import { ArrowLeft, GraduationCap, Search, BookOpen, Upload, Eye, Radio, PawPrint, X, Loader2 } from 'lucide-react';
+import { JobsheetStatus, JobsheetItem, Student } from '../types';
+import { uploadPdf, uploadLive, deletePdf, deleteLive } from '../services/jobsheetService';
 
 const TOTAL_JOBSHEETS = 24;
 
@@ -18,25 +19,32 @@ const STATUS_FILTERS: Array<{ value: 'all' | JobsheetStatus; label: string }> = 
 ];
 
 interface StudentDashboardProps {
+  student: Student;
   name: string;
   jobsheets: JobsheetItem[];
-  onChange: (jobsheets: JobsheetItem[]) => void;
   onBack: () => void;
 }
 
 export const StudentDashboard: React.FC<StudentDashboardProps> = ({
+  student,
   name,
   jobsheets,
-  onChange,
   onBack,
 }) => {
-  const setJobsheets = (updater: (prev: JobsheetItem[]) => JobsheetItem[]) => {
-    onChange(updater(jobsheets));
-  };
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | JobsheetStatus>('all');
+  const [busyIds, setBusyIds] = useState<Set<number>>(new Set());
   const fileInputRefs = useRef<Record<number, HTMLInputElement | null>>({});
   const liveInputRefs = useRef<Record<number, HTMLInputElement | null>>({});
+
+  const setBusy = (id: number, busy: boolean) => {
+    setBusyIds((prev) => {
+      const next = new Set(prev);
+      if (busy) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+  };
 
   const checkedCount = jobsheets.filter((j) => j.status === 'checked').length;
   const withPdfCount = jobsheets.filter((j) => j.pdfUrl).length;
@@ -49,58 +57,42 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
     });
   }, [jobsheets, search, statusFilter]);
 
-  const handleFileChange = (id: number, file: File | null) => {
+  const handleFileChange = async (id: number, file: File | null) => {
     if (!file) return;
-    const url = URL.createObjectURL(file);
-    setJobsheets((prev) =>
-      prev.map((j) =>
-        j.id === id
-          ? {
-              ...j,
-              pdfName: file.name,
-              pdfUrl: url,
-              uploadedAt: new Date().toLocaleString('en-US', {
-                month: 'numeric',
-                day: 'numeric',
-                year: 'numeric',
-                hour: 'numeric',
-                minute: '2-digit',
-              }),
-              status: j.status === 'not-started' ? 'in-progress' : j.status,
-            }
-          : j
-      )
-    );
+    setBusy(id, true);
+    try {
+      await uploadPdf(student, id, file);
+    } finally {
+      setBusy(id, false);
+    }
   };
 
-  const handleLiveFileChange = (id: number, file: File | null) => {
+  const handleLiveFileChange = async (id: number, file: File | null) => {
     if (!file) return;
-    const url = URL.createObjectURL(file);
-    setJobsheets((prev) =>
-      prev.map((j) => (j.id === id ? { ...j, liveName: file.name, liveUrl: url } : j))
-    );
+    setBusy(id, true);
+    try {
+      await uploadLive(student, id, file);
+    } finally {
+      setBusy(id, false);
+    }
   };
 
-  const handleDeletePdf = (id: number) => {
-    setJobsheets((prev) =>
-      prev.map((j) =>
-        j.id === id
-          ? {
-              ...j,
-              pdfName: null,
-              pdfUrl: null,
-              uploadedAt: null,
-              status: j.status === 'in-progress' ? 'not-started' : j.status,
-            }
-          : j
-      )
-    );
+  const handleDeletePdf = async (id: number) => {
+    setBusy(id, true);
+    try {
+      await deletePdf(student, id);
+    } finally {
+      setBusy(id, false);
+    }
   };
 
-  const handleDeleteLive = (id: number) => {
-    setJobsheets((prev) =>
-      prev.map((j) => (j.id === id ? { ...j, liveName: null, liveUrl: null } : j))
-    );
+  const handleDeleteLive = async (id: number) => {
+    setBusy(id, true);
+    try {
+      await deleteLive(student, id);
+    } finally {
+      setBusy(id, false);
+    }
   };
 
   return (
@@ -207,6 +199,12 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                   {j.uploadedAt && (
                     <p className="mt-0.5 text-[11px] text-slate-600">Uploaded: {j.uploadedAt}</p>
                   )}
+                  {busyIds.has(j.id) && (
+                    <p className="mt-1 flex items-center gap-1.5 text-[11px] text-teal-400">
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                      Uploading…
+                    </p>
+                  )}
 
                   <div className="mt-4 flex flex-wrap items-center gap-2">
                     <input
@@ -241,8 +239,9 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                         </a>
                         <button
                           onClick={() => handleDeletePdf(j.id)}
+                          disabled={busyIds.has(j.id)}
                           aria-label="Delete PDF"
-                          className="px-2 py-1.5 text-slate-400 hover:text-red-400 hover:bg-slate-700 transition-colors"
+                          className="px-2 py-1.5 text-slate-400 hover:text-red-400 hover:bg-slate-700 transition-colors disabled:opacity-50"
                         >
                           <X className="w-3.5 h-3.5" />
                         </button>
@@ -250,7 +249,8 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                     ) : (
                       <button
                         onClick={() => fileInputRefs.current[j.id]?.click()}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-full bg-teal-600/80 hover:bg-teal-500 text-white transition-colors"
+                        disabled={busyIds.has(j.id)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-full bg-teal-600/80 hover:bg-teal-500 text-white transition-colors disabled:opacity-50"
                       >
                         <Upload className="w-3.5 h-3.5" />
                         Upload PDF
@@ -270,8 +270,9 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                         </a>
                         <button
                           onClick={() => handleDeleteLive(j.id)}
+                          disabled={busyIds.has(j.id)}
                           aria-label="Delete live recording"
-                          className="px-2 py-1.5 text-slate-400 hover:text-red-400 hover:bg-slate-700 transition-colors"
+                          className="px-2 py-1.5 text-slate-400 hover:text-red-400 hover:bg-slate-700 transition-colors disabled:opacity-50"
                         >
                           <X className="w-3.5 h-3.5" />
                         </button>
@@ -279,7 +280,8 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                     ) : (
                       <button
                         onClick={() => liveInputRefs.current[j.id]?.click()}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-full bg-amber-600/80 hover:bg-amber-500 text-white transition-colors"
+                        disabled={busyIds.has(j.id)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-full bg-amber-600/80 hover:bg-amber-500 text-white transition-colors disabled:opacity-50"
                       >
                         <Radio className="w-3.5 h-3.5" />
                         Upload Live

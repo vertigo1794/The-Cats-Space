@@ -10,6 +10,7 @@ import { Footer } from './components/Footer';
 import { BookingConfirmationModal } from './components/BookingConfirmationModal';
 import { JobsheetPage } from './components/JobsheetPage';
 import { LibraryPage } from './components/LibraryPage';
+import { subscribeAllJobsheets } from './services/jobsheetService';
 
 const TOTAL_JOBSHEETS = 24;
 
@@ -24,7 +25,6 @@ const createInitialJobsheets = (): JobsheetItem[] =>
     liveUrl: null,
   }));
 
-
 export default function App() {
   const [themeMode, setThemeMode] = useState<ThemeMode>('day');
   const [activeSection, setActiveSection] = useState<string>('hero');
@@ -36,9 +36,11 @@ export default function App() {
     badrul: createInitialJobsheets(),
   });
 
-  const updateStudentJobsheets = (student: Student, jobsheets: JobsheetItem[]) => {
-    setJobsheetsByStudent((prev) => ({ ...prev, [student]: jobsheets }));
-  };
+  // Live-synced with Firestore/Storage — persists across refreshes and devices
+  useEffect(() => {
+    const unsubscribe = subscribeAllJobsheets(setJobsheetsByStudent);
+    return unsubscribe;
+  }, []);
 
   // Scroll to a section once the home page has mounted (needed when navigating from Jobsheet)
   useEffect(() => {
@@ -132,15 +134,9 @@ export default function App() {
           onNavigateSection={handleNavigateSection}
         />
         {page === 'jobsheet' ? (
-          <JobsheetPage
-            jobsheetsByStudent={jobsheetsByStudent}
-            onUpdateStudentJobsheets={updateStudentJobsheets}
-          />
+          <JobsheetPage jobsheetsByStudent={jobsheetsByStudent} />
         ) : (
-          <LibraryPage
-            jobsheetsByStudent={jobsheetsByStudent}
-            onUpdateStudentJobsheets={updateStudentJobsheets}
-          />
+          <LibraryPage jobsheetsByStudent={jobsheetsByStudent} />
         )}
         <Footer onNavigateSection={handleNavigateSection} onNavigateJobsheet={handleNavigateJobsheet} onNavigateLibrary={handleNavigateLibrary} />
       </div>
