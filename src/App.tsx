@@ -53,10 +53,10 @@ export default function App() {
   // Preload videos into cache immediately on launch
   useEffect(() => {
     preloadVideos([
-      '/videos/cats-day.webm',
-      '/videos/cats-night.webm',
-      '/videos/cats-day.mp4',
-      '/videos/cats-night.mp4',
+      'videos/cats-day.webm',
+      'videos/cats-night.webm',
+      'videos/cats-day.mp4',
+      'videos/cats-night.mp4',
     ]);
   }, []);
 

@@ -69,7 +69,7 @@ export const LocationSection: React.FC = () => {
               {/* Map Graphic Layer */}
               <div
                 className="absolute inset-0 bg-cover bg-center opacity-40 filter saturate-150"
-                style={{ backgroundImage: `url('/images/cats_day_hero_1790168663147.jpg')` }}
+                style={{ backgroundImage: `url('images/cats_day_hero_1790168663147.jpg')` }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/70 to-slate-950/30" />
 

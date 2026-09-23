@@ -19,8 +19,8 @@ export const HeroVideoBackground: React.FC<HeroVideoBackgroundProps> = ({
   onToggleTheme,
   children,
 }) => {
-  const [dayVideoBlob, setDayVideoBlob] = useState<string>('/videos/cats-day.webm');
-  const [nightVideoBlob, setNightVideoBlob] = useState<string>('/videos/cats-night.webm');
+  const [dayVideoBlob, setDayVideoBlob] = useState<string>('videos/cats-day.webm');
+  const [nightVideoBlob, setNightVideoBlob] = useState<string>('videos/cats-night.webm');
   const [isDayVideoReady, setIsDayVideoReady] = useState(false);
   const [isNightVideoReady, setIsNightVideoReady] = useState(false);
   const [isSoundPlaying, setIsSoundPlaying] = useState(false);
@@ -38,8 +38,8 @@ export const HeroVideoBackground: React.FC<HeroVideoBackgroundProps> = ({
     async function loadCachedVideos() {
       try {
         const [dayCached, nightCached] = await Promise.all([
-          getCachedVideoUrl('/videos/cats-day.webm'),
-          getCachedVideoUrl('/videos/cats-night.webm'),
+          getCachedVideoUrl('videos/cats-day.webm'),
+          getCachedVideoUrl('videos/cats-night.webm'),
         ]);
 
         if (isMounted) {
@@ -95,32 +95,32 @@ export const HeroVideoBackground: React.FC<HeroVideoBackgroundProps> = ({
 
   return (
     <div className="relative w-full min-h-screen overflow-hidden bg-slate-950 flex flex-col justify-between">
-      {USE_PRANK_MP3 && <audio ref={prankAudioRef} src="/audio/prank_sound.mp3" loop />}
+      {USE_PRANK_MP3 && <audio ref={prankAudioRef} src="audio/prank_sound.mp3" loop />}
 
       {/* 1. Ultra-fast Tiny Blur Placeholder (< 500 bytes) */}
       <div
         className={`absolute inset-0 z-0 bg-cover bg-center transition-opacity duration-1000 filter blur-xl scale-105 pointer-events-none ${
           themeMode === 'day' ? 'opacity-90' : 'opacity-0'
         }`}
-        style={{ backgroundImage: `url('/videos/cats-day-tiny.jpg')` }}
+        style={{ backgroundImage: `url('videos/cats-day-tiny.jpg')` }}
       />
       <div
         className={`absolute inset-0 z-0 bg-cover bg-center transition-opacity duration-1000 filter blur-xl scale-105 pointer-events-none ${
           themeMode === 'night' ? 'opacity-90' : 'opacity-0'
         }`}
-        style={{ backgroundImage: `url('/videos/cats-night-tiny.jpg')` }}
+        style={{ backgroundImage: `url('videos/cats-night-tiny.jpg')` }}
       />
 
       {/* 2. Crisp Poster Images (Instant responsive view while video hydrates) */}
       <img
-        src="/videos/cats-day-poster.jpg"
+        src="videos/cats-day-poster.jpg"
         alt="Day seaside cats poster"
         className={`absolute inset-0 w-full h-full object-cover object-center z-1 transition-opacity duration-700 pointer-events-none ${
           themeMode === 'day' && !isDayVideoReady ? 'opacity-100' : 'opacity-0'
         }`}
       />
       <img
-        src="/videos/cats-night-poster.jpg"
+        src="videos/cats-night-poster.jpg"
         alt="Night starry cats poster"
         className={`absolute inset-0 w-full h-full object-cover object-center z-1 transition-opacity duration-700 pointer-events-none ${
           themeMode === 'night' && !isNightVideoReady ? 'opacity-100' : 'opacity-0'

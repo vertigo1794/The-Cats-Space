@@ -35,7 +35,7 @@ export const JobsheetPage: React.FC<JobsheetPageProps> = ({
       <div
         className="absolute inset-0 opacity-[0.06] pointer-events-none"
         style={{
-          backgroundImage: "url('/images/paw_trail.jpg')",
+          backgroundImage: "url('images/paw_trail.jpg')",
           backgroundRepeat: 'repeat',
           backgroundSize: '220px',
           filter: 'invert(1)',

@@ -3,7 +3,7 @@ import { Sparkles, GraduationCap } from 'lucide-react';
 
 const STUDENTS = [
   {
-    photo: '/images/sasha.jpg',
+    photo: 'images/sasha.jpg',
     name: 'Sasha',
     tag: 'Student 01',
     bio: "Hello! I'm Sasha, a student exploring the world of mobile app development. I enjoy designing clean interfaces and bringing ideas to life through code. Always learning, always curious!",
@@ -11,7 +11,7 @@ const STUDENTS = [
     funFact: 'Favorite cat breed: British Shorthair 🐾',
   },
   {
-    photo: '/images/badrul.jpg',
+    photo: 'images/badrul.jpg',
     name: 'Badrul',
     tag: 'Student 02',
     bio: "Hi there! I'm Badrul, passionate about building things that work. I love solving problems and turning concepts into working applications. Let's build something awesome together!",
@@ -32,7 +32,7 @@ export const BookingSection: React.FC = () => {
       <div
         className="absolute inset-0 opacity-[0.06] pointer-events-none"
         style={{
-          backgroundImage: "url('/images/paw_trail.jpg')",
+          backgroundImage: "url('images/paw_trail.jpg')",
           backgroundRepeat: 'repeat',
           backgroundSize: '220px',
           filter: 'invert(1)',
@@ -45,7 +45,7 @@ export const BookingSection: React.FC = () => {
         </div>
         <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-display text-white tracking-tight flex items-center justify-center gap-2">
           Who Lives in the Cat House?
-          <img src="/images/cat_box_icon.jpg" alt="Cat in a box" className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg" />
+          <img src="images/cat_box_icon.jpg" alt="Cat in a box" className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg" />
         </h2>
         <p className="mt-3 text-sm text-slate-400">
           Meet the two students behind this portal — Sasha and Badrul
